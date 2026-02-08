@@ -2,6 +2,7 @@ package switcher
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/dlasky/gotk3-layershell/layershell"
 	"github.com/gotk3/gotk3/gdk"
@@ -63,11 +64,13 @@ func (s *Switcher) calculateAndApplyMargins() {
 		}
 	}
 
-	marginH := (scrW * (100 - s.config.WidthPercent)) / 200
-	marginV := (scrH * (100 - s.config.HeightPercent)) / 200
+	// Apply inverse GDK_SCALE to counteract GTK's automatic scaling
+	gdkScale := utils.GetGDKScale()
+	marginH := int(float64(scrW) * float64(100-s.config.WidthPercent) / 200 / gdkScale)
+	marginV := int(float64(scrH) * float64(100-s.config.HeightPercent) / 200 / gdkScale)
 
 	debugLog("Screen: %dx%d (Found: %v)", scrW, scrH, foundMonitor)
-	debugLog("Margins: H=%d, V=%d", marginH, marginV)
+	debugLog("Margins: H=%d, V=%d (GDKScale: %.1f)", marginH, marginV, gdkScale)
 
 	layershell.SetMargin(s.window, layershell.LAYER_SHELL_EDGE_LEFT, marginH)
 	layershell.SetMargin(s.window, layershell.LAYER_SHELL_EDGE_RIGHT, marginH)
@@ -125,7 +128,12 @@ func (s *Switcher) createMainLayout() {
 	scroll.SetPolicy(gtk.POLICY_AUTOMATIC, gtk.POLICY_NEVER)
 
 	// Main container (Vertical list of rows)
-	s.box, _ = gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 30)
+	var err error
+	s.box, err = gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 30)
+	if err != nil {
+		log.Println("Failed to create box:", err)
+		return
+	}
 	s.box.SetHAlign(gtk.ALIGN_CENTER)
 	s.box.SetVAlign(gtk.ALIGN_CENTER)
 	s.box.SetMarginStart(50)

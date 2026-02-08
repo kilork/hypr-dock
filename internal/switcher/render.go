@@ -63,7 +63,9 @@ func (s *Switcher) createWorkspaceCard(wsID int, indices []int, currentRow *gtk.
 	}
 
 	// Calculate scale
-	cardWidth := float64(s.config.PreviewWidth)
+	// Apply inverse GDK_SCALE to counteract GTK's automatic scaling
+	gdkScale := utils.GetGDKScale()
+	cardWidth := float64(s.config.PreviewWidth) / gdkScale
 	if mon.Width <= 0 {
 		mon.Width = 1920 // Fallback
 	}

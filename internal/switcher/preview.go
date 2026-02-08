@@ -120,7 +120,11 @@ func (s *Switcher) capturePreviewAsync(
 	}
 
 	// Configure stream BEFORE capture so scaling/masks are applied
-	stream.SetFixedSize(scaledW, scaledH)
+	// Apply GDK_SCALE to account for display scaling
+	gdkScale := utils.GetGDKScale()
+	adjustedW := int(float64(scaledW) * gdkScale)
+	adjustedH := int(float64(scaledH) * gdkScale)
+	stream.SetFixedSize(adjustedW, adjustedH)
 	stream.SetBorderRadius(4)
 	stream.OnReady(func(sz *hysc.Size) {
 		// Cache the screenshot pixbuf with timestamp for future use
@@ -224,7 +228,11 @@ func (s *Switcher) updatePreviews() {
 				return
 			}
 
-			stream.SetFixedSize(s.config.PreviewWidth, int(float64(s.config.PreviewWidth)*0.6)) // Approx
+			// Apply GDK_SCALE to account for display scaling
+			gdkScale := utils.GetGDKScale()
+			previewW := int(float64(s.config.PreviewWidth) * gdkScale)
+			previewH := int(float64(s.config.PreviewWidth) * 0.6 * gdkScale)
+			stream.SetFixedSize(previewW, previewH)
 			stream.SetBorderRadius(4)
 
 			// Capture

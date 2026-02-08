@@ -1,6 +1,25 @@
 package utils
 
-import "slices"
+import (
+	"math"
+	"os"
+	"slices"
+	"strconv"
+)
+
+// GetGDKScale returns the GDK_SCALE environment variable value.
+// Returns 1 if not set, invalid, or less than 1.
+func GetGDKScale() float64 {
+	scaleStr := os.Getenv("GDK_SCALE")
+	if scaleStr == "" {
+		return 1
+	}
+	scale, err := strconv.ParseFloat(scaleStr, 64)
+	if err != nil {
+		return 1
+	}
+	return math.Max(scale, 1)
+}
 
 func AddToSlice(slice *[]string, value string) {
 	*slice = append(*slice, value)
